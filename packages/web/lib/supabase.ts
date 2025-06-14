@@ -4,10 +4,17 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  if (typeof window !== 'undefined') {
+    throw new Error('Missing Supabase environment variables')
+  }
+  // For build time, use placeholder values
+  console.warn('Supabase environment variables not found, using placeholders for build')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-key'
+)
 
 export type Database = {
   public: {
