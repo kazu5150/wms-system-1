@@ -150,13 +150,17 @@ export function ImageLightbox({
       )}
 
       {/* Main image */}
-      <div className="relative max-w-[90vw] max-h-[90vh] overflow-hidden">
+      <div className="relative flex items-center justify-center max-w-[75vw] max-h-[75vh]">
         <img
           src={currentImage.url}
           alt={currentImage.title}
-          className="max-w-full max-h-full object-contain transition-transform duration-200"
-          style={{ transform: `scale(${scale})` }}
-          onClick={(e) => e.stopPropagation()}
+          className="max-w-full max-h-full object-contain transition-transform duration-200 cursor-pointer"
+          style={{ 
+            transform: `scale(${scale})`,
+            maxWidth: '75vw',
+            maxHeight: '75vh'
+          }}
+          onClick={onClose}
         />
         
         {/* Image title */}

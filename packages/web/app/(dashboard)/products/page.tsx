@@ -319,6 +319,7 @@ export default function ProductsPage() {
                           src={product.main_image_url}
                           alt={product.name}
                           className="w-12 h-12 object-cover rounded-md border cursor-pointer hover:opacity-80 transition-opacity"
+                          style={{ objectFit: 'cover' }}
                           onClick={() => openImageLightbox(product, 0)}
                         />
                       ) : (

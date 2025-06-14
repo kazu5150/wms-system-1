@@ -222,6 +222,7 @@ export default function InventoryPage() {
                           src={item.product.main_image_url}
                           alt={item.product.name}
                           className="w-12 h-12 object-cover rounded-md border cursor-pointer hover:opacity-80 transition-opacity"
+                          style={{ objectFit: 'cover' }}
                           onClick={() => openImageLightbox(item, 0)}
                         />
                       ) : (
