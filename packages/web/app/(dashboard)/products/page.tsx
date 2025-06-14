@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Search, Plus, Edit, Trash2 } from 'lucide-react'
+import { Search, Plus, Edit, Trash2, Image as ImageIcon } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { ImageUpload } from '@/components/ui/image-upload'
+import { ImageLightbox } from '@/components/ui/image-lightbox'
 
 type Product = {
   id: string
@@ -37,6 +39,10 @@ type Product = {
   barcode: string | null
   min_stock: number
   max_stock: number
+  main_image_url: string | null
+  additional_image_1_url: string | null
+  additional_image_2_url: string | null
+  additional_image_3_url: string | null
   is_active: boolean
   created_at: string
   updated_at: string
@@ -48,6 +54,9 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showDialog, setShowDialog] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxImages, setLightboxImages] = useState<Array<{url: string, title: string, isMain?: boolean}>>([])
+  const [lightboxIndex, setLightboxIndex] = useState(0)
   const [formData, setFormData] = useState({
     sku: '',
     name: '',
@@ -58,7 +67,11 @@ export default function ProductsPage() {
     volume: '',
     barcode: '',
     min_stock: '0',
-    max_stock: '999999'
+    max_stock: '999999',
+    main_image_url: '',
+    additional_image_1_url: '',
+    additional_image_2_url: '',
+    additional_image_3_url: ''
   })
 
   useEffect(() => {
@@ -99,7 +112,11 @@ export default function ProductsPage() {
       volume: '',
       barcode: '',
       min_stock: '0',
-      max_stock: '999999'
+      max_stock: '999999',
+      main_image_url: '',
+      additional_image_1_url: '',
+      additional_image_2_url: '',
+      additional_image_3_url: ''
     })
     setShowDialog(true)
   }
@@ -116,7 +133,11 @@ export default function ProductsPage() {
       volume: product.volume?.toString() || '',
       barcode: product.barcode || '',
       min_stock: product.min_stock.toString(),
-      max_stock: product.max_stock.toString()
+      max_stock: product.max_stock.toString(),
+      main_image_url: product.main_image_url || '',
+      additional_image_1_url: product.additional_image_1_url || '',
+      additional_image_2_url: product.additional_image_2_url || '',
+      additional_image_3_url: product.additional_image_3_url || ''
     })
     setShowDialog(true)
   }
@@ -137,7 +158,11 @@ export default function ProductsPage() {
       volume: formData.volume ? parseFloat(formData.volume) : null,
       barcode: formData.barcode || null,
       min_stock: parseInt(formData.min_stock),
-      max_stock: parseInt(formData.max_stock)
+      max_stock: parseInt(formData.max_stock),
+      main_image_url: formData.main_image_url || null,
+      additional_image_1_url: formData.additional_image_1_url || null,
+      additional_image_2_url: formData.additional_image_2_url || null,
+      additional_image_3_url: formData.additional_image_3_url || null
     }
 
     if (editingProduct) {
@@ -187,6 +212,47 @@ export default function ProductsPage() {
     }
   }
 
+  function openImageLightbox(product: Product, startIndex: number = 0) {
+    const images = []
+    
+    // Add main image first
+    if (product.main_image_url) {
+      images.push({
+        url: product.main_image_url,
+        title: `${product.name} - メイン画像`,
+        isMain: true
+      })
+    }
+    
+    // Add additional images
+    if (product.additional_image_1_url) {
+      images.push({
+        url: product.additional_image_1_url,
+        title: `${product.name} - 追加画像 1`
+      })
+    }
+    
+    if (product.additional_image_2_url) {
+      images.push({
+        url: product.additional_image_2_url,
+        title: `${product.name} - 追加画像 2`
+      })
+    }
+    
+    if (product.additional_image_3_url) {
+      images.push({
+        url: product.additional_image_3_url,
+        title: `${product.name} - 追加画像 3`
+      })
+    }
+    
+    if (images.length > 0) {
+      setLightboxImages(images)
+      setLightboxIndex(startIndex)
+      setLightboxOpen(true)
+    }
+  }
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -219,6 +285,7 @@ export default function ProductsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>画像</TableHead>
                 <TableHead>SKU</TableHead>
                 <TableHead>商品名</TableHead>
                 <TableHead>カテゴリ</TableHead>
@@ -233,19 +300,33 @@ export default function ProductsPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center">
+                  <TableCell colSpan={10} className="text-center">
                     読み込み中...
                   </TableCell>
                 </TableRow>
               ) : filteredProducts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center">
+                  <TableCell colSpan={10} className="text-center">
                     商品データがありません
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredProducts.map((product) => (
                   <TableRow key={product.id}>
+                    <TableCell>
+                      {product.main_image_url ? (
+                        <img
+                          src={product.main_image_url}
+                          alt={product.name}
+                          className="w-12 h-12 object-cover rounded-md border cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => openImageLightbox(product, 0)}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-100 rounded-md border flex items-center justify-center">
+                          <ImageIcon className="h-6 w-6 text-gray-400" />
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="font-medium">{product.sku}</TableCell>
                     <TableCell>{product.name}</TableCell>
                     <TableCell>{product.category || '-'}</TableCell>
@@ -281,7 +362,7 @@ export default function ProductsPage() {
       </Card>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingProduct ? '商品編集' : '新規商品登録'}
@@ -392,6 +473,109 @@ export default function ProductsPage() {
                 />
               </div>
             </div>
+
+            {/* Image Upload Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 border-t pt-4">
+                <ImageIcon className="h-5 w-5" />
+                <Label className="text-lg font-medium">商品画像</Label>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {/* Main Image */}
+                <div className="col-span-2 md:col-span-1">
+                  <ImageUpload
+                    value={formData.main_image_url}
+                    onChange={(value) => setFormData({ ...formData, main_image_url: value })}
+                    onRemove={() => setFormData({ ...formData, main_image_url: '' })}
+                    onImageClick={() => {
+                      if (formData.main_image_url) {
+                        const formImages = []
+                        if (formData.main_image_url) formImages.push({ url: formData.main_image_url, title: 'メイン画像', isMain: true })
+                        if (formData.additional_image_1_url) formImages.push({ url: formData.additional_image_1_url, title: '追加画像 1' })
+                        if (formData.additional_image_2_url) formImages.push({ url: formData.additional_image_2_url, title: '追加画像 2' })
+                        if (formData.additional_image_3_url) formImages.push({ url: formData.additional_image_3_url, title: '追加画像 3' })
+                        setLightboxImages(formImages)
+                        setLightboxIndex(0)
+                        setLightboxOpen(true)
+                      }
+                    }}
+                    label="メイン画像"
+                    isMain={true}
+                  />
+                </div>
+
+                {/* Additional Image 1 */}
+                <div className="col-span-2 md:col-span-1">
+                  <ImageUpload
+                    value={formData.additional_image_1_url}
+                    onChange={(value) => setFormData({ ...formData, additional_image_1_url: value })}
+                    onRemove={() => setFormData({ ...formData, additional_image_1_url: '' })}
+                    onImageClick={() => {
+                      if (formData.additional_image_1_url) {
+                        const formImages = []
+                        if (formData.main_image_url) formImages.push({ url: formData.main_image_url, title: 'メイン画像', isMain: true })
+                        if (formData.additional_image_1_url) formImages.push({ url: formData.additional_image_1_url, title: '追加画像 1' })
+                        if (formData.additional_image_2_url) formImages.push({ url: formData.additional_image_2_url, title: '追加画像 2' })
+                        if (formData.additional_image_3_url) formImages.push({ url: formData.additional_image_3_url, title: '追加画像 3' })
+                        setLightboxImages(formImages)
+                        setLightboxIndex(formData.main_image_url ? 1 : 0)
+                        setLightboxOpen(true)
+                      }
+                    }}
+                    label="追加画像 1"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* Additional Image 2 */}
+                <div>
+                  <ImageUpload
+                    value={formData.additional_image_2_url}
+                    onChange={(value) => setFormData({ ...formData, additional_image_2_url: value })}
+                    onRemove={() => setFormData({ ...formData, additional_image_2_url: '' })}
+                    onImageClick={() => {
+                      if (formData.additional_image_2_url) {
+                        const formImages = []
+                        if (formData.main_image_url) formImages.push({ url: formData.main_image_url, title: 'メイン画像', isMain: true })
+                        if (formData.additional_image_1_url) formImages.push({ url: formData.additional_image_1_url, title: '追加画像 1' })
+                        if (formData.additional_image_2_url) formImages.push({ url: formData.additional_image_2_url, title: '追加画像 2' })
+                        if (formData.additional_image_3_url) formImages.push({ url: formData.additional_image_3_url, title: '追加画像 3' })
+                        setLightboxImages(formImages)
+                        const indexOffset = (formData.main_image_url ? 1 : 0) + (formData.additional_image_1_url ? 1 : 0)
+                        setLightboxIndex(indexOffset)
+                        setLightboxOpen(true)
+                      }
+                    }}
+                    label="追加画像 2"
+                  />
+                </div>
+
+                {/* Additional Image 3 */}
+                <div>
+                  <ImageUpload
+                    value={formData.additional_image_3_url}
+                    onChange={(value) => setFormData({ ...formData, additional_image_3_url: value })}
+                    onRemove={() => setFormData({ ...formData, additional_image_3_url: '' })}
+                    onImageClick={() => {
+                      if (formData.additional_image_3_url) {
+                        const formImages = []
+                        if (formData.main_image_url) formImages.push({ url: formData.main_image_url, title: 'メイン画像', isMain: true })
+                        if (formData.additional_image_1_url) formImages.push({ url: formData.additional_image_1_url, title: '追加画像 1' })
+                        if (formData.additional_image_2_url) formImages.push({ url: formData.additional_image_2_url, title: '追加画像 2' })
+                        if (formData.additional_image_3_url) formImages.push({ url: formData.additional_image_3_url, title: '追加画像 3' })
+                        setLightboxImages(formImages)
+                        const indexOffset = (formData.main_image_url ? 1 : 0) + (formData.additional_image_1_url ? 1 : 0) + (formData.additional_image_2_url ? 1 : 0)
+                        setLightboxIndex(indexOffset)
+                        setLightboxOpen(true)
+                      }
+                    }}
+                    label="追加画像 3"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDialog(false)}>
@@ -403,6 +587,15 @@ export default function ProductsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        images={lightboxImages}
+        currentIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onIndexChange={setLightboxIndex}
+      />
     </div>
   )
 }

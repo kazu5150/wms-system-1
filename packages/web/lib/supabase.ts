@@ -50,6 +50,10 @@ export type Database = {
           barcode: string | null
           min_stock: number
           max_stock: number
+          main_image_url: string | null
+          additional_image_1_url: string | null
+          additional_image_2_url: string | null
+          additional_image_3_url: string | null
           is_active: boolean
           created_at: string
           updated_at: string

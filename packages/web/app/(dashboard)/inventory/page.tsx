@@ -14,7 +14,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Search, Plus, ArrowUpDown } from 'lucide-react'
+import { Search, Plus, ArrowUpDown, Image as ImageIcon } from 'lucide-react'
+import { ImageLightbox } from '@/components/ui/image-lightbox'
 
 type InventoryItem = {
   id: string
@@ -28,6 +29,10 @@ type InventoryItem = {
     unit: string
     min_stock: number
     max_stock: number
+    main_image_url: string | null
+    additional_image_1_url: string | null
+    additional_image_2_url: string | null
+    additional_image_3_url: string | null
   }
   location: {
     code: string
@@ -41,6 +46,9 @@ export default function InventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxImages, setLightboxImages] = useState<Array<{url: string, title: string, isMain?: boolean}>>([])
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
   useEffect(() => {
     fetchInventory()
@@ -58,7 +66,11 @@ export default function InventoryPage() {
           category,
           unit,
           min_stock,
-          max_stock
+          max_stock,
+          main_image_url,
+          additional_image_1_url,
+          additional_image_2_url,
+          additional_image_3_url
         ),
         location:locations!inner(
           code,
@@ -95,6 +107,47 @@ export default function InventoryPage() {
     item.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.location.code.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  function openImageLightbox(item: InventoryItem, startIndex: number = 0) {
+    const images = []
+    
+    // Add main image first
+    if (item.product.main_image_url) {
+      images.push({
+        url: item.product.main_image_url,
+        title: `${item.product.name} - メイン画像`,
+        isMain: true
+      })
+    }
+    
+    // Add additional images
+    if (item.product.additional_image_1_url) {
+      images.push({
+        url: item.product.additional_image_1_url,
+        title: `${item.product.name} - 追加画像 1`
+      })
+    }
+    
+    if (item.product.additional_image_2_url) {
+      images.push({
+        url: item.product.additional_image_2_url,
+        title: `${item.product.name} - 追加画像 2`
+      })
+    }
+    
+    if (item.product.additional_image_3_url) {
+      images.push({
+        url: item.product.additional_image_3_url,
+        title: `${item.product.name} - 追加画像 3`
+      })
+    }
+    
+    if (images.length > 0) {
+      setLightboxImages(images)
+      setLightboxIndex(startIndex)
+      setLightboxOpen(true)
+    }
+  }
 
   return (
     <div>
@@ -134,6 +187,7 @@ export default function InventoryPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>画像</TableHead>
                 <TableHead>SKU</TableHead>
                 <TableHead>商品名</TableHead>
                 <TableHead>カテゴリ</TableHead>
@@ -149,19 +203,33 @@ export default function InventoryPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center">
+                  <TableCell colSpan={11} className="text-center">
                     読み込み中...
                   </TableCell>
                 </TableRow>
               ) : filteredInventory.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center">
+                  <TableCell colSpan={11} className="text-center">
                     在庫データがありません
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredInventory.map((item) => (
                   <TableRow key={item.id}>
+                    <TableCell>
+                      {item.product.main_image_url ? (
+                        <img
+                          src={item.product.main_image_url}
+                          alt={item.product.name}
+                          className="w-12 h-12 object-cover rounded-md border cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => openImageLightbox(item, 0)}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-100 rounded-md border flex items-center justify-center">
+                          <ImageIcon className="h-6 w-6 text-gray-400" />
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="font-medium">{item.product.sku}</TableCell>
                     <TableCell>{item.product.name}</TableCell>
                     <TableCell>{item.product.category || '-'}</TableCell>
@@ -198,6 +266,15 @@ export default function InventoryPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        images={lightboxImages}
+        currentIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onIndexChange={setLightboxIndex}
+      />
     </div>
   )
 }
