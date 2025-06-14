@@ -2,16 +2,17 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Package, Truck, BarChart3, MapPin, Home } from 'lucide-react'
+import { Package, Truck, BarChart3, MapPin, Home, Building2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navigation = [
   { name: 'ダッシュボード', href: '/', icon: Home },
   { name: '在庫管理', href: '/inventory', icon: Package },
   { name: '商品マスタ', href: '/products', icon: Package },
+  { name: '倉庫管理', href: '/warehouses', icon: Building2 },
+  { name: 'ロケーション', href: '/locations', icon: MapPin },
   { name: '入庫管理', href: '/inbound', icon: Truck },
   { name: '出庫管理', href: '/outbound', icon: Truck },
-  { name: 'ロケーション', href: '/locations', icon: MapPin },
   { name: 'レポート', href: '/reports', icon: BarChart3 },
 ]
 
