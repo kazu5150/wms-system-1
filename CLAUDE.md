@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a WMS (Warehouse Management System) built with Supabase MCP and Next.js. The system provides inventory management, inbound/outbound order processing, and reporting capabilities.
+This is a WMS (Warehouse Management System) built with Supabase cloud and Next.js. The system provides inventory management, inbound/outbound order processing, and reporting capabilities. The project uses cloud Supabase for data persistence and real-time features.
 
 ## Development Commands
 
@@ -23,9 +23,8 @@ pnpm build       # Build all packages
 # Linting
 pnpm lint        # Lint all packages
 
-# Supabase (local development)
-pnpm supabase:start  # Start local Supabase
-pnpm supabase:stop   # Stop local Supabase
+# Database
+# Project uses cloud Supabase - no local setup required
 ```
 
 ## Architecture
@@ -49,10 +48,10 @@ supabase-mcp/
 ```
 
 ### Key Technologies
-- **Backend**: Supabase (PostgreSQL), MCP Server (TypeScript)
+- **Backend**: Supabase Cloud (PostgreSQL), MCP Server (TypeScript)
 - **Frontend**: Next.js 14 (App Router), Tailwind CSS, shadcn/ui
-- **State Management**: Zustand
-- **Data Fetching**: TanStack Query
+- **Database**: Cloud Supabase with real-time subscriptions
+- **Styling**: Tailwind CSS with custom components
 
 ### MCP Tools Available
 - `inventory_check`: Check inventory levels
@@ -62,3 +61,13 @@ supabase-mcp/
 
 ### Database Schema
 The system uses 12 main tables including warehouses, locations, products, inventory, orders, and movements. All tables use UUID primary keys and include audit timestamps.
+
+### Environment Setup
+- Copy `.env.example` to `.env`
+- Update Supabase credentials from your cloud project
+- Required variables: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+### Development Notes
+- App runs on port 3001 (Next.js)
+- Uses cloud Supabase for all data operations
+- No authentication required for current version
